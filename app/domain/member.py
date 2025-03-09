@@ -1,3 +1,5 @@
+from app.constants import MAX_BOOKINGS
+
 class Member:
     """Member domain entity"""
     
@@ -8,7 +10,7 @@ class Member:
         self.booking_count = booking_count
         self.date_joined = date_joined
     
-    def can_book(self, max_bookings=2):
+    def can_book(self, max_bookings=MAX_BOOKINGS):
         """Check if the member can make more bookings"""
         return self.booking_count < max_bookings
     
