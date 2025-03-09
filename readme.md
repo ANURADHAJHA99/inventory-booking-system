@@ -185,7 +185,7 @@ docker-compose exec web pytest
 **Request Body**:
 ```json
 {
-  "member_id": 1,
+  "member_id": 91,
   "item_title": "Bali"
 }
 ```
@@ -193,7 +193,7 @@ docker-compose exec web pytest
 **Successful Response** (201 Created):
 ```json
 {
-  "booking_reference": "AB12CD34",
+  "booking_reference": "CFADC7B8",
   "member_name": "Sophie Davis",
   "item_title": "Bali",
   "booking_date": "2025-03-09T12:30:45"
@@ -214,14 +214,14 @@ docker-compose exec web pytest
 **Request Body**:
 ```json
 {
-  "booking_reference": "AB12CD34"
+  "booking_reference": "CFADC7B8"
 }
 ```
 
 **Successful Response** (200 OK):
 ```json
 {
-  "message": "Booking AB12CD34 cancelled successfully"
+  "message": "Booking CFADC7B8 cancelled successfully"
 }
 ```
 
