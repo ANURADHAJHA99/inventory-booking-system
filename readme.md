@@ -282,7 +282,7 @@ curl -X GET http://localhost:5000/api/inventory
 # Book an item
 curl -X POST http://localhost:5000/api/book \
   -H "Content-Type: application/json" \
-  -d '{"member_id": 1, "item_title": "Bali"}'
+  -d '{"member_id": 91, "item_title": "Bali"}'
 
 # Cancel a booking (replace AB12CD34 with your actual booking reference)
 curl -X POST http://localhost:5000/api/cancel \
