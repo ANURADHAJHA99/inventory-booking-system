@@ -1,9 +1,18 @@
-# Virtual Environment
+# Virtual Environment - multiple patterns to be thorough
 venv/
 env/
 ENV/
 .venv/
 .virtualenv/
+venv
+env
+**/venv/
+**/env/
+virtualenv/
+python3-virtualenv/
+python3-venv/
+python-virtualenv/
+python-venv/
 
 # Database
 *.db
