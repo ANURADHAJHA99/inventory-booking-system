@@ -38,21 +38,20 @@ echo -e "${GREEN}Dependencies installed successfully.${NC}"
 # Setup .env file properly
 echo -e "\n${YELLOW}Checking .env file...${NC}"
 if [ ! -f .env ]; then
-    read -rp "Enter your Supabase database password: " DB_PASS
+    read -rp "Enter your database password: " DB_PASS
     ENCODED_PASS=$(python -c "import urllib.parse; print(urllib.parse.quote('''$DB_PASS'''))")
     cat > .env << EOF
 SECRET_KEY=$(openssl rand -hex 16)
 FLASK_APP=run.py
 FLASK_ENV=development
 DATABASE_URL=postgresql://postgres:$ENCODED_PASS@db.wxixszituuzjiuhjedua.supabase.co:5432/postgres
-MAX_BOOKINGS=2
 EOF
     echo -e "${GREEN}.env file created successfully.${NC}"
 else
     echo -e "${GREEN}.env file already exists. Checking format...${NC}"
     if grep -q "postgresql://postgres:@" .env; then
         echo -e "${RED}Warning: DATABASE_URL in .env seems incorrectly formatted.${NC}"
-        read -rp "Enter your correct Supabase database password: " DB_PASS
+        read -rp "Enter your correct database password: " DB_PASS
         ENCODED_PASS=$(python -c "import urllib.parse; print(urllib.parse.quote('''$DB_PASS'''))")
         sed -i.bak "s|postgresql://postgres:@.*@|postgresql://postgres:$ENCODED_PASS@|" .env
         echo -e "${GREEN}.env file corrected.${NC}"

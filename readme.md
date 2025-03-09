@@ -10,7 +10,7 @@ This application manages an inventory booking system with the following capabili
 - Members can cancel their bookings
 - CSV data import for bulk loading members and inventory
 - RESTful API endpoints with proper status codes and error handling
-- Maximum booking limit per member (configurable)
+- Maximum booking limit per member (defined in constants)
 - Expiration date validation for inventory items
 
 ## 🏗️ Architecture & Design Patterns
@@ -46,6 +46,12 @@ The service layer orchestrates interactions between repositories and contains tr
 - Business operations happen atomically
 - Separation of concerns between API controllers and data access
 - Reusability of business logic across different entry points
+
+### Constants for Business Rules
+Business rules like the maximum number of bookings per member are defined as constants in a dedicated file:
+- Makes business rules explicit and centralized
+- Avoids embedding rules in environment variables
+- Provides clear documentation of business constraints
 
 ## 📋 Project Requirements
 
@@ -158,9 +164,6 @@ DATABASE_URL=postgresql://postgres:password@db:5432/inventory
 
 # For simple SQLite setup:
 # DATABASE_URL=sqlite:///app.db
-
-# Application settings
-MAX_BOOKINGS=2
 ```
 
 ## 🧪 Running Tests
@@ -297,6 +300,7 @@ inventory_system/
 ├── app/
 │   ├── __init__.py              # Flask application factory
 │   ├── config.py                # Configuration settings
+│   ├── constants.py             # Business rule constants
 │   ├── domain/                  # Domain models (business entities)
 │   │   ├── member.py            # Member domain entity
 │   │   ├── inventory_item.py    # Inventory item domain entity
@@ -348,6 +352,10 @@ inventory_system/
 - **Pros**: Ensures consistent state, reduces resource usage
 - **Trade-offs**: Can make unit testing more complex if not implemented carefully
 
+### Business Rules as Constants
+- **Pros**: Centralizes business rules, makes them explicit in code, improves maintainability
+- **Trade-offs**: Requires code changes and redeployment to modify business rules
+
 ### PostgreSQL Database
 - **Pros**: ACID compliance, robust relational features, good for data integrity
 - **Trade-offs**: Requires more setup than SQLite, more complex deployment
@@ -361,3 +369,4 @@ inventory_system/
 - **Frontend Application**: Develop a web interface for managing the inventory system
 - **Caching Layer**: Implement Redis caching for frequently accessed data
 - **API Documentation**: Add Swagger/OpenAPI documentation
+- **Business Rules Configuration**: Move hard-coded business rules to a configuration system
