@@ -14,13 +14,13 @@ class BookingService:
     
     def __init__(
         self, 
-        member_repository: MemberRepository = None,
-        inventory_repository: InventoryRepository = None, 
-        booking_repository: BookingRepository = None
+        booking_repository: BookingRepository,
+        member_repository: MemberRepository,
+        inventory_repository: InventoryRepository,
     ):
-        self.member_repository = member_repository or MemberRepository()
-        self.inventory_repository = inventory_repository or InventoryRepository()
-        self.booking_repository = booking_repository or BookingRepository()
+        self.member_repository = member_repository
+        self.inventory_repository = inventory_repository
+        self.booking_repository = booking_repository
         self.max_bookings: int = Config.MAX_BOOKINGS
     
     def book_item(self, member_id: int, item_title: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
