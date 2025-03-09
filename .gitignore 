@@ -2,22 +2,37 @@
 venv/
 env/
 ENV/
+.venv/
+.virtualenv/
 
 # Database
 *.db
 *.sqlite3
+*.sqlite
 
 # Python bytecode
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Distribution / packaging
 dist/
 build/
 *.egg-info/
+*.egg/
+.installed.cfg
+downloads/
+eggs/
+parts/
+sdist/
+var/
+wheels/
 
 # Environment variables
 .env
@@ -25,16 +40,34 @@ build/
 .env.development
 .env.test
 .env.production
+.env.*
 
 # IDE specific files
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+*.sublime-workspace
+*.sublime-project
 
 # OS specific files
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
 # Flask migration versions
 migrations/versions/
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Local configuration files
+instance/

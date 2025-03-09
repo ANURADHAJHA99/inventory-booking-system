@@ -1,11 +1,20 @@
 from app import db
 from app.models.inventory_item import InventoryItemModel
 from app.domain.inventory_item import InventoryItem
+from typing import Optional
 
 class InventoryRepository:
     """Repository for inventory item data access"""
     
-    def get_by_id(self, item_id):
+    _instance = None
+    
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
+    def get_by_id(self, item_id: int) -> Optional[InventoryItem]:
         """Get an inventory item by ID"""
         item = InventoryItemModel.query.get(item_id)
         if not item:
@@ -19,7 +28,7 @@ class InventoryRepository:
             expiration_date=item.expiration_date
         )
     
-    def get_by_title(self, title):
+    def get_by_title(self, title: str) -> Optional[InventoryItem]:
         """Get an inventory item by title"""
         item = InventoryItemModel.query.filter_by(title=title).first()
         if not item:
@@ -33,7 +42,7 @@ class InventoryRepository:
             expiration_date=item.expiration_date
         )
     
-    def decrease_quantity(self, item_id):
+    def decrease_quantity(self, item_id: int) -> bool:
         """Decrease the remaining count for an inventory item"""
         item = InventoryItemModel.query.get(item_id)
         if not item or item.remaining_count <= 0:
@@ -43,7 +52,7 @@ class InventoryRepository:
         db.session.commit()
         return True
     
-    def increase_quantity(self, item_id):
+    def increase_quantity(self, item_id: int) -> bool:
         """Increase the remaining count for an inventory item"""
         item = InventoryItemModel.query.get(item_id)
         if not item:
@@ -53,7 +62,7 @@ class InventoryRepository:
         db.session.commit()
         return True
     
-    def create(self, item):
+    def create(self, item: InventoryItem) -> InventoryItem:
         """Create a new inventory item"""
         new_item = InventoryItemModel(
             title=item.title,

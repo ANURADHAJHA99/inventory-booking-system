@@ -1,26 +1,63 @@
 # Inventory Booking System
 
-A Flask-based REST API for an inventory booking system that follows the repository pattern for clean architecture and demonstrates maintainable, scalable design principles.
+A Flask-based REST API for inventory management that implements clean architecture principles and showcases the use of design patterns for maintainable, scalable code.
 
 ## 📝 System Overview
 
-This application allows members to book items from an inventory and cancel bookings, with the following features:
+This application manages an inventory booking system with the following capabilities:
 
-- CSV data import for members and inventory items
-- Booking management with validation (max bookings per member)
-- RESTful API endpoints
-- Clean architecture with domain-driven design
-- Detailed test coverage
+- Members can book items from the inventory (with validation)
+- Members can cancel their bookings
+- CSV data import for bulk loading members and inventory
+- RESTful API endpoints with proper status codes and error handling
+- Maximum booking limit per member (configurable)
+- Expiration date validation for inventory items
 
 ## 🏗️ Architecture & Design Patterns
 
-This project showcases several important software design principles:
+This project demonstrates my understanding and implementation of several software engineering principles:
 
-- **Repository Pattern**: Separates data access logic from business logic
-- **Domain-Driven Design**: Domain entities encapsulate business rules
-- **Service Layer**: Orchestrates interactions between repositories
-- **Clean Architecture**: Separation of concerns with clear dependencies
-- **RESTful API**: Well-defined endpoints with proper HTTP methods and status codes
+### Repository Pattern
+I've implemented repositories to abstract data access, making it easier to:
+- Mock database access for unit testing
+- Swap out the underlying database technology if needed
+- Keep business logic free of data access concerns
+
+### Singleton Pattern
+The application uses singletons for repositories and services to:
+- Ensure a single instance exists throughout the application lifecycle
+- Reduce memory usage and improve performance
+- Provide a global access point without passing references
+
+### Dependency Injection
+Services are designed with dependency injection to:
+- Decouple components for better testability
+- Make dependencies explicit
+- Enable flexibility in providing different implementations
+
+### Domain-Driven Design
+The domain layer contains rich models that:
+- Encapsulate business rules and validation
+- Represent the ubiquitous language of the domain
+- Separate business logic from persistence concerns
+
+### Service Layer Pattern
+The service layer orchestrates interactions between repositories and contains transaction boundaries, ensuring:
+- Business operations happen atomically
+- Separation of concerns between API controllers and data access
+- Reusability of business logic across different entry points
+
+## 📋 Project Requirements
+
+The application was designed to meet the following requirements:
+
+- Upload CSV files (via command line) and write data to a database
+- Book an item from inventory for a member
+- Cancel a booking based on a booking reference
+- Track booking history with timestamps
+- Enforce a maximum number of bookings per member
+- Validate inventory availability
+- Provide a RESTful API for these operations
 
 ## 🚀 Quick Start
 
@@ -107,17 +144,23 @@ Create a `.env` file in the root directory with the following variables:
 
 ```
 # Flask configuration
-SECRET_KEY=your_secret_key_here
+SECRET_KEY=use_a_strong_random_key_in_production
 FLASK_APP=run.py
 FLASK_ENV=development
 
-# Database configuration
-# Use this for local development with Docker PostgreSQL:
+# Database configuration - choose one of these options
+
+# For Docker:
 DATABASE_URL=postgresql://postgres:password@db:5432/inventory
 
-# Use this for local development with local PostgreSQL:
+# For local PostgreSQL:
 # DATABASE_URL=postgresql://postgres:password@localhost:5432/inventory
 
+# For simple SQLite setup:
+# DATABASE_URL=sqlite:///app.db
+
+# Application settings
+MAX_BOOKINGS=2
 ```
 
 ## 🧪 Running Tests
@@ -199,13 +242,6 @@ docker-compose exec web pytest
     "description": "Suspendisse congue erat ac ex venenatis mattis...",
     "remaining_count": 5,
     "expiration_date": "2030-11-19"
-  },
-  {
-    "id": 2,
-    "title": "Madeira",
-    "description": "Donec condimentum, risus non mollis sollicitudin...",
-    "remaining_count": 4,
-    "expiration_date": "2030-11-20"
   }
 ]
 ```
@@ -261,46 +297,67 @@ inventory_system/
 ├── app/
 │   ├── __init__.py              # Flask application factory
 │   ├── config.py                # Configuration settings
-│   ├── domain/                  # Domain models
+│   ├── domain/                  # Domain models (business entities)
 │   │   ├── member.py            # Member domain entity
 │   │   ├── inventory_item.py    # Inventory item domain entity
 │   │   └── booking.py           # Booking domain entity
 │   ├── repositories/            # Data access layer
-│   │   ├── member_repository.py
-│   │   ├── inventory_repository.py
-│   │   └── booking_repository.py
+│   │   ├── member_repository.py # Member data operations
+│   │   ├── inventory_repository.py # Inventory data operations
+│   │   └── booking_repository.py # Booking data operations
 │   ├── services/                # Business logic layer 
-│   │   └── booking_service.py
+│   │   └── booking_service.py   # Booking business logic
 │   ├── api/                     # API routes
-│   │   ├── __init__.py
-│   │   └── routes.py
+│   │   ├── __init__.py          # API blueprint registration
+│   │   └── routes.py            # API endpoints
 │   ├── models/                  # SQLAlchemy models
-│   │   ├── member.py
-│   │   ├── inventory_item.py
-│   │   └── booking.py
+│   │   ├── member.py            # Database model for members
+│   │   ├── inventory_item.py    # Database model for inventory
+│   │   └── booking.py           # Database model for bookings
 │   └── commands/                # CLI commands
-│       ├── __init__.py
-│       └── import_csv.py
+│       ├── __init__.py          # Command registration
+│       └── import_csv.py        # CSV import command
 ├── migrations/                  # Database migrations
 ├── tests/                       # Unit tests
+│   ├── test_models.py           # Tests for database models
+│   ├── test_repositories.py     # Tests for repositories
+│   ├── test_services.py         # Tests for business logic
+│   └── test_api.py              # Tests for API endpoints
 ├── data/                        # CSV data files
+│   ├── members.csv              # Sample member data
+│   └── inventory.csv            # Sample inventory data
 ├── .env                         # Environment variables
 ├── Dockerfile                   # Docker configuration
 ├── docker-compose.yml           # Docker Compose configuration
+├── .gitignore                   # Git ignore configuration
 ├── requirements.txt             # Python dependencies
 └── run.py                       # Application entry point
 ```
 
 ## ⚠️ Design Considerations & Trade-offs
 
-- **Repository Pattern**: Adds a layer of abstraction that helps with testing and future changes to the data storage mechanism, though it requires more code initially.
-  
-- **Domain Models**: Separating domain logic from database models allows for cleaner business rules but requires manual mapping between layers.
+### Repository Pattern
+- **Pros**: Abstracts data access, makes testing easier, provides a clean separation of concerns
+- **Trade-offs**: Requires more code than direct database access, adds a layer of indirection
 
-- **PostgreSQL**: Chosen for ACID compliance and relational features that fit this domain model well, though it requires more setup than SQLite.
+### Domain Models vs ORM Models
+- **Pros**: Domain models can encapsulate business rules without being tied to a database schema
+- **Trade-offs**: Requires mapping between domain and ORM models, which adds complexity
+
+### Singleton Pattern for Services
+- **Pros**: Ensures consistent state, reduces resource usage
+- **Trade-offs**: Can make unit testing more complex if not implemented carefully
+
+### PostgreSQL Database
+- **Pros**: ACID compliance, robust relational features, good for data integrity
+- **Trade-offs**: Requires more setup than SQLite, more complex deployment
 
 ## 🚀 Future Enhancements
 
-- Add authentication and authorization
-- Implement event-driven architecture for notifications
-- Add reporting capabilities
+- **Authentication and Authorization**: Add JWT or OAuth2 for secure API access
+- **Event-Driven Architecture**: Implement event emission for actions like bookings and cancellations
+- **API Rate Limiting**: Add protection against API abuse
+- **Advanced Reporting**: Add endpoints for generating statistics and reports
+- **Frontend Application**: Develop a web interface for managing the inventory system
+- **Caching Layer**: Implement Redis caching for frequently accessed data
+- **API Documentation**: Add Swagger/OpenAPI documentation

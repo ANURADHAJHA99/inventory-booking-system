@@ -1,11 +1,20 @@
 from app import db
 from app.models.booking import BookingModel
 from app.domain.booking import Booking
+from typing import Optional
 
 class BookingRepository:
     """Repository for booking data access"""
     
-    def get_by_id(self, booking_id):
+    _instance = None
+    
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
+    def get_by_id(self, booking_id: int) -> Optional[Booking]:
         """Get a booking by ID"""
         booking = BookingModel.query.get(booking_id)
         if not booking:
@@ -20,7 +29,7 @@ class BookingRepository:
             is_active=booking.is_active
         )
     
-    def get_by_reference(self, booking_reference):
+    def get_by_reference(self, booking_reference: str) -> Optional[Booking]:
         """Get a booking by reference"""
         booking = BookingModel.query.filter_by(booking_reference=booking_reference).first()
         if not booking:
@@ -35,7 +44,7 @@ class BookingRepository:
             is_active=booking.is_active
         )
     
-    def create(self, member_id, inventory_item_id):
+    def create(self, member_id: int, inventory_item_id: int) -> Optional[Booking]:
         """Create a new booking"""
         # Generate a unique booking reference
         booking_reference = Booking.generate_reference()
@@ -60,7 +69,7 @@ class BookingRepository:
             is_active=new_booking.is_active
         )
     
-    def cancel(self, booking_reference):
+    def cancel(self, booking_reference: str) -> Optional[Booking]:
         """Cancel a booking by reference"""
         booking = BookingModel.query.filter_by(
             booking_reference=booking_reference,

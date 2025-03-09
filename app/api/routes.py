@@ -1,8 +1,15 @@
 from flask import request, jsonify
+from typing import List, Dict, Any, Optional
+
 from app.api import bp
 from app.services.booking_service import BookingService
+from app.models.inventory_item import InventoryItemModel
+from app.models.booking import BookingModel
 
-@bp.route('/book', methods=['POST'])
+# Get the singleton instance of BookingService
+booking_service = BookingService.get_instance()
+
+@bp.route('/book', methods=['POST']) 
 def book_item():
     """
     Book an inventory item
@@ -23,16 +30,24 @@ def book_item():
     if 'member_id' not in data or 'item_title' not in data:
         return jsonify({'error': 'Must include member_id and item_title fields'}), 400
     
-    # Book the item
-    service = BookingService()
-    booking_data, error = service.book_item(data['member_id'], data['item_title'])
-    
-    if error:
-        return jsonify({'error': error}), 400
-    
-    return jsonify(booking_data), 201
+    try:
+        # Convert member_id to integer
+        member_id = int(data['member_id'])
+        item_title = str(data['item_title'])
+        
+        # Book the item using the singleton instance
+        booking_data, error = booking_service.book_item(member_id, item_title)
+        
+        if error:
+            return jsonify({'error': error}), 400
+        
+        return jsonify(booking_data), 201
+    except ValueError:
+        return jsonify({'error': 'member_id must be an integer'}), 400
+    except Exception as e:
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
-@bp.route('/cancel', methods=['POST'])
+@bp.route('/cancel', methods=['POST']) 
 def cancel_booking():
     """
     Cancel a booking
@@ -52,60 +67,78 @@ def cancel_booking():
     if 'booking_reference' not in data:
         return jsonify({'error': 'Must include booking_reference field'}), 400
     
-    # Cancel the booking
-    service = BookingService()
-    success, error = service.cancel_booking(data['booking_reference'])
-    
-    if not success:
-        return jsonify({'error': error}), 400
-    
-    return jsonify({'message': f"Booking {data['booking_reference']} cancelled successfully"}), 200
+    try:
+        booking_reference = str(data['booking_reference'])
+        
+        # Cancel the booking using the singleton instance
+        success, error = booking_service.cancel_booking(booking_reference)
+        
+        if not success:
+            return jsonify({'error': error}), 400
+        
+        return jsonify({'message': f"Booking {booking_reference} cancelled successfully"}), 200
+    except Exception as e:
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
-# Add additional endpoints for listing available inventory and member bookings
 @bp.route('/inventory', methods=['GET'])
 def get_inventory():
-    """Get all available inventory items"""
-    from app.repositories.inventory_repository import InventoryRepository
-    from app.models.inventory_item import InventoryItemModel
+    """
+    Get all available inventory items
     
-    repository = InventoryRepository()
-    items = InventoryItemModel.query.all()
-    
-    result = []
-    for item in items:
-        result.append({
-            'id': item.id,
-            'title': item.title,
-            'description': item.description,
-            'remaining_count': item.remaining_count,
-            'expiration_date': item.expiration_date.isoformat()
-        })
-    
-    return jsonify(result), 200
+    Returns:
+        200: List of inventory items
+    """
+    try:
+        items = InventoryItemModel.query.all()
+        
+        result: List[Dict[str, Any]] = []
+        for item in items:
+            result.append({
+                'id': item.id,
+                'title': item.title,
+                'description': item.description,
+                'remaining_count': item.remaining_count,
+                'expiration_date': item.expiration_date.isoformat()
+            })
+        
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
 
 @bp.route('/members/<int:member_id>/bookings', methods=['GET'])
-def get_member_bookings(member_id):
-    """Get all bookings for a member"""
-    from app.repositories.member_repository import MemberRepository
-    from app.models.booking import BookingModel
+def get_member_bookings(member_id: int):
+    """
+    Get all bookings for a member
     
-    repository = MemberRepository()
-    member = repository.get_by_id(member_id)
-    
-    if not member:
-        return jsonify({'error': 'Member not found'}), 404
-    
-    bookings = BookingModel.query.filter_by(
-        member_id=member_id,
-        is_active=True
-    ).all()
-    
-    result = []
-    for booking in bookings:
-        result.append({
-            'booking_reference': booking.booking_reference,
-            'inventory_item_id': booking.inventory_item_id,
-            'booking_date': booking.booking_date.isoformat()
-        })
-    
-    return jsonify(result), 200
+    Args:
+        member_id: ID of the member
+        
+    Returns:
+        200: List of bookings for the member
+        404: Member not found
+    """
+    try:
+        # Use the singleton instance
+        member = booking_service.member_repository.get_by_id(member_id)
+        
+        if not member:
+            return jsonify({'error': 'Member not found'}), 404
+        
+        bookings = BookingModel.query.filter_by(
+            member_id=member_id,
+            is_active=True
+        ).all()
+        
+        result: List[Dict[str, Any]] = []
+        for booking in bookings:
+            result.append({
+                'booking_reference': booking.booking_reference,
+                'inventory_item_id': booking.inventory_item_id,
+                'booking_date': booking.booking_date.isoformat()
+            })
+        
+        return jsonify(result), 200
+    except ValueError:
+        return jsonify({'error': 'member_id must be an integer'}), 400
+    except Exception as e:
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
