@@ -366,7 +366,6 @@ inventory_system/
 - **Event-Driven Architecture**: Implement event emission for actions like bookings and cancellations
 - **API Rate Limiting**: Add protection against API abuse
 - **Advanced Reporting**: Add endpoints for generating statistics and reports
-- **Frontend Application**: Develop a web interface for managing the inventory system
 - **Caching Layer**: Implement Redis caching for frequently accessed data
 - **API Documentation**: Add Swagger/OpenAPI documentation
 - **Business Rules Configuration**: Move hard-coded business rules to a configuration system
